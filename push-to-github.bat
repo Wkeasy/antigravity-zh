@@ -20,6 +20,10 @@ if errorlevel 1 (
     git remote add origin %repo_url%
     echo [成功] 已成功绑定远程仓库！
     echo.
+) else (
+    for /f "delims=" %%i in ('git remote get-url origin') do set "current_origin=%%i"
+    echo [远程] 当前绑定的 GitHub 仓库: %current_origin%
+    echo.
 )
 
 echo [1/3] 正在添加所有改动到暂存区...
