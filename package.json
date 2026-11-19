@@ -1,0 +1,31 @@
+{
+  "name": "antigravity-i18n",
+  "version": "1.0.0",
+  "description": "Google Antigravity 桌面端一键中文汉化工具与词典系统",
+  "main": "src/core/patcher.js",
+  "bin": {
+    "antigravity-i18n": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/rebuild_asar.js",
+    "patch": "node bin/cli.js patch",
+    "install-zh": "node bin/cli.js patch",
+    "restore": "node bin/cli.js restore",
+    "status": "node bin/cli.js status",
+    "extract": "node bin/cli.js extract",
+    "shortcut": "node scripts/create_shortcut.js",
+    "test": "node test/test-pipeline.js && node test/test-user-strings.js"
+  },
+  "keywords": [
+    "antigravity",
+    "i18n",
+    "chinese",
+    "localization",
+    "electron"
+  ],
+  "author": "Antigravity-i18n Team",
+  "license": "MIT",
+  "dependencies": {
+    "@electron/asar": "^3.2.14"
+  }
+}

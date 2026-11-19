@@ -1,0 +1,24 @@
+# 依赖目录
+node_modules/
+
+# 打包与二进制大文件 (生成物，发布建议放在 GitHub Releases)
+*.asar
+*.asar.patched
+app.asar.patched
+*.patched
+
+# 临时与备份文件
+*.tmp
+*.bak
+*.swp
+*.log
+npm-debug.log*
+
+# 提取缓存
+missing_candidates.json
+
+# 系统与编辑缓存
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
