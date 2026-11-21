@@ -74,19 +74,57 @@ function launchAntigravity() {
   child.unref();
 }
 
-async function main() {
-  // 1. 清理后台待执行的官方更新安装包，彻底防止被官方静默覆盖
-  if (fs.existsSync(updaterDir)) {
-    try {
-      console.log('[防护] 正在清理后台静默更新缓存...');
-      fs.rmSync(updaterDir, { recursive: true, force: true });
-      fs.mkdirSync(updaterDir, { recursive: true });
-      console.log('[防护] 已清除待运行的官方覆盖安装包。');
-    } catch (_) {}
-  }
+const asar = require('@electron/asar');
 
-  // 2. 确保原版备份存在
-  if (fs.existsSync(asarPath) && !fs.existsSync(bakPath)) {
+function getAsarVersion(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    const pkgBuf = asar.extractFile(filePath, 'package.json');
+    return JSON.parse(pkgBuf.toString('utf8')).version || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isAsarPatched(filePath) {
+  if (!fs.existsSync(filePath)) return false;
+  try {
+    const preloadBuf = asar.extractFile(filePath, 'dist/preload.js');
+    return preloadBuf.toString('utf8').includes('__ANTIGRAVITY_ZH_DICT__');
+  } catch (_) {
+    return false;
+  }
+}
+
+async function main() {
+  // 1. 自动升级感知：检查是否刚完成官方新版本升级 (例如从 2.33.0 升级到了 2.34.0)
+  const currentVersion = getAsarVersion(asarPath);
+  const bakVersion = fs.existsSync(bakPath) ? getAsarVersion(bakPath) : null;
+  const isCurrentPatched = isAsarPatched(asarPath);
+
+  if (currentVersion && (!isCurrentPatched || (bakVersion && currentVersion !== bakVersion))) {
+    console.log(`\n🎉 [自动升级感知] 检测到 Antigravity 官方新版本 v${currentVersion}（原版本: v${bakVersion || '未知'}）！`);
+    console.log('[备份] 正在更新官方原版备份: app.asar.bak ...');
+    try {
+      fs.copyFileSync(asarPath, bakPath);
+    } catch (e) {
+      console.warn('[备份提示]:', e.message);
+    }
+
+    console.log(`[编译] 正在全自动为新版本 v${currentVersion} 注入全量中文汉化...`);
+    const tempDir = path.join(os.tmpdir(), `antigravity-upgrade-${Date.now()}`);
+    try {
+      await extractAsar(bakPath, tempDir);
+      applyPatches(tempDir);
+      await packAsar(tempDir, patchedPath);
+      fs.copyFileSync(patchedPath, projectPatched);
+      console.log(`[就绪] 新版本 v${currentVersion} 中文核心编译成功！\n`);
+    } catch (err) {
+      console.error('[错误] 自动编译新版本汉化失败:', err.message);
+    } finally {
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+    }
+  } else if (fs.existsSync(asarPath) && !fs.existsSync(bakPath)) {
     console.log('[备份] 正在创建官方原版备份: app.asar.bak ...');
     try {
       fs.copyFileSync(asarPath, bakPath);
@@ -96,7 +134,7 @@ async function main() {
     }
   }
 
-  // 3. 准备最新汉化核心包 (优先使用本地稳定验证包)
+  // 2. 准备最新汉化核心包 (优先使用本地稳定验证包)
   console.log('[1/4] 正在准备最新汉化核心数据...');
   if (fs.existsSync(projectPatched)) {
     console.log('[提示] 载入已通过全面校验的稳定汉化包...');

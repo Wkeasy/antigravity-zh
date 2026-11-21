@@ -315,7 +315,7 @@ function __translateContextLabel(l) {
     }
   }
 
-  // 6. 补丁 dist/updater.js 禁用后台静默自动下载与退出静默重装，彻底防止重启电脑后汉化被官方覆盖
+  // 6. 补丁 dist/updater.js: 允许官方下载更新，但在退出时不静默覆盖，由用户确认点击“重启以更新”触发
   const updaterPath = path.join(distDir, 'updater.js');
   if (fs.existsSync(updaterPath)) {
     let updaterCode = fs.readFileSync(updaterPath, 'utf-8');
@@ -324,14 +324,14 @@ function __translateContextLabel(l) {
     if (!updaterCode.includes(updaterHookMarker)) {
       updaterCode = updaterCode.replace(
         /electron_updater_1\.autoUpdater\.autoDownload = true;/g,
-        `${updaterHookMarker}\n    electron_updater_1.autoUpdater.autoDownload = false;\n    electron_updater_1.autoUpdater.autoInstallOnAppQuit = false;`
+        `${updaterHookMarker}\n    electron_updater_1.autoUpdater.autoDownload = true;\n    electron_updater_1.autoUpdater.autoInstallOnAppQuit = false;`
       );
       updaterCode = updaterCode.replace(
         /electron_updater_1\.autoUpdater\.autoInstallOnAppQuit = electron_1\.app\.isPackaged;/g,
         `electron_updater_1.autoUpdater.autoInstallOnAppQuit = false;`
       );
       fs.writeFileSync(updaterPath, updaterCode, 'utf-8');
-      console.log(`[补丁] 已禁用后台静默下载与退出自动覆盖，永久锁定汉化状态。`);
+      console.log(`[补丁] 已启用更新自动下载，由用户确认重启安装。`);
     }
   }
 

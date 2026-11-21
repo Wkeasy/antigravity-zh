@@ -1888,7 +1888,12 @@
     "Submit Prompt (Alternate to Enter)": "提交提问 (回车备选快捷键)",
     "Terminal: Add to Chat": "终端：添加至对话",
     "Terminal: Select All": "终端：全选",
-    "Not Signed In": "未登录"
+    "Not Signed In": "未登录",
+    "Downloading Update": "正在下载更新...",
+    "Install Update": "安装更新",
+    "Installing Update": "正在安装更新...",
+    "Updating…": "正在更新…",
+    "Updating...": "正在更新..."
   },
   "patterns": []
 }
