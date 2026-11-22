@@ -2,6 +2,7 @@
 node_modules/
 
 # 打包与二进制大文件 (生成物，发布建议放在 GitHub Releases)
+release/
 *.asar
 *.asar.patched
 app.asar.patched

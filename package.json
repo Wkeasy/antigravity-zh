@@ -14,6 +14,7 @@
     "status": "node bin/cli.js status",
     "extract": "node bin/cli.js extract",
     "shortcut": "node scripts/create_shortcut.js",
+    "package:portable": "node scripts/package_portable.js",
     "test": "node test/test-pipeline.js && node test/test-user-strings.js"
   },
   "keywords": [

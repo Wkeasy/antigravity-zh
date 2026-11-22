@@ -5,22 +5,24 @@ const crypto = require('crypto');
 const { execFileSync, execSync, spawn } = require('child_process');
 const { extractAsar, packAsar } = require('../src/core/asar-manager');
 const { applyPatches } = require('../src/core/patcher');
+const {
+  cacheDir,
+  ensureCacheDir,
+  findAntigravityInstallDir,
+  getBundleAssetsHash,
+} = require('../src/core/locator');
 
 console.log('========================================================');
 console.log('      🚀 Antigravity 永久全中文本地化启动器');
 console.log('========================================================');
 
-const localApp = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-const installDir = path.join(localApp, 'Programs', 'antigravity');
-const resourcesDir = path.join(installDir, 'resources');
-const asarPath = path.join(resourcesDir, 'app.asar');
-const patchedPath = path.join(resourcesDir, 'app.asar.patched');
-const bakPath = path.join(resourcesDir, 'app.asar.bak');
-const exePath = path.join(installDir, 'Antigravity.exe');
-const updaterDir = path.join(localApp, 'antigravity-updater');
 const roamingApp = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
 const logPath = path.join(roamingApp, 'Antigravity', 'logs', 'main.log');
 const projectPatched = path.join(__dirname, '..', 'app.asar.patched');
+const assetsHashFile = path.join(cacheDir, 'assets-hash.txt');
+
+let installDir = '';
+let exePath = '';
 
 function sleepSync(ms) {
   try {
@@ -97,6 +99,20 @@ function isAsarPatched(filePath) {
 }
 
 async function main() {
+  installDir = await findAntigravityInstallDir({ interactive: true });
+  const resourcesDir = path.join(installDir, 'resources');
+  const asarPath = path.join(resourcesDir, 'app.asar');
+  const patchedPath = path.join(resourcesDir, 'app.asar.patched');
+  const bakPath = path.join(resourcesDir, 'app.asar.bak');
+  exePath = path.join(installDir, 'Antigravity.exe');
+
+  ensureCacheDir();
+  const currentAssetsHash = getBundleAssetsHash();
+  const savedAssetsHash = fs.existsSync(assetsHashFile)
+    ? fs.readFileSync(assetsHashFile, 'utf8').trim()
+    : null;
+  const assetsChanged = currentAssetsHash !== savedAssetsHash;
+
   // 1. 自动升级感知：检查是否刚完成官方新版本升级 (例如从 2.33.0 升级到了 2.34.0)
   const currentVersion = getAsarVersion(asarPath);
   const bakVersion = fs.existsSync(bakPath) ? getAsarVersion(bakPath) : null;
@@ -117,7 +133,8 @@ async function main() {
       await extractAsar(bakPath, tempDir);
       applyPatches(tempDir);
       await packAsar(tempDir, patchedPath);
-      fs.copyFileSync(patchedPath, projectPatched);
+      try { fs.copyFileSync(patchedPath, projectPatched); } catch (_) {}
+      fs.writeFileSync(assetsHashFile, currentAssetsHash, 'utf8');
       console.log(`[就绪] 新版本 v${currentVersion} 中文核心编译成功！\n`);
     } catch (err) {
       console.error('[错误] 自动编译新版本汉化失败:', err.message);
@@ -134,28 +151,34 @@ async function main() {
     }
   }
 
-  // 2. 准备最新汉化核心包 (优先使用本地稳定验证包)
+  // 2. 准备最新汉化核心包 (优先使用本地稳定验证包；若词典有更新则自动重新编译)
   console.log('[1/4] 正在准备最新汉化核心数据...');
-  if (fs.existsSync(projectPatched)) {
-    console.log('[提示] 载入已通过全面校验的稳定汉化包...');
-    fs.copyFileSync(projectPatched, patchedPath);
-    console.log('[2/4] 稳定汉化核心包就绪！');
-  } else if (!fs.existsSync(patchedPath)) {
-    const sourceAsar = fs.existsSync(bakPath) ? bakPath : asarPath;
-    const tempDir = path.join(os.tmpdir(), `antigravity-build-${Date.now()}`);
-    try {
-      await extractAsar(sourceAsar, tempDir);
-      applyPatches(tempDir);
-      await packAsar(tempDir, patchedPath);
-      fs.copyFileSync(patchedPath, projectPatched);
-      console.log('[2/4] 最新汉化核心包编译就绪！');
-    } catch (err) {
-      console.error('[错误] 构建汉化包失败:', err.message);
-      process.exit(1);
-    } finally {
+  if (assetsChanged || !fs.existsSync(patchedPath)) {
+    if (fs.existsSync(projectPatched) && !assetsChanged) {
+      console.log('[提示] 载入已通过全面校验的稳定汉化包...');
+      fs.copyFileSync(projectPatched, patchedPath);
+      console.log('[2/4] 稳定汉化核心包就绪！');
+    } else {
+      if (assetsChanged) {
+        console.log('[词典] 检测到词典或注入引擎有更新，正在重新编译汉化核心包...');
+      }
+      const sourceAsar = fs.existsSync(bakPath) ? bakPath : asarPath;
+      const tempDir = path.join(os.tmpdir(), `antigravity-build-${Date.now()}`);
       try {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch (_) {}
+        await extractAsar(sourceAsar, tempDir);
+        applyPatches(tempDir);
+        await packAsar(tempDir, patchedPath);
+        try { fs.copyFileSync(patchedPath, projectPatched); } catch (_) {}
+        fs.writeFileSync(assetsHashFile, currentAssetsHash, 'utf8');
+        console.log('[2/4] 最新汉化核心包编译就绪！');
+      } catch (err) {
+        console.error('[错误] 构建汉化包失败:', err.message);
+        process.exit(1);
+      } finally {
+        try {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        } catch (_) {}
+      }
     }
   } else {
     console.log('[2/4] 汉化核心包已就绪！');
