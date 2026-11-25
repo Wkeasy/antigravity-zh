@@ -2461,7 +2461,16 @@
     "Allow/deny specific terminal commands.": "允许或禁止特定的终端命令。",
     "Folders these agents can access.": "这些智能体可访问的文件夹。",
     "Commands and files these agents can use.": "这些智能体可使用的命令与文件。",
-    "Select the workspace type that will be used for new conversations started with the New Workspace option.": "选择通过“新建工作区”选项开启新对话时使用的工作区类型。"
+    "Select the workspace type that will be used for new conversations started with the New Workspace option.": "选择通过“新建工作区”选项开启新对话时使用的工作区类型。",
+    "Orchestrator Settings": "编排器设置",
+    "Choose the models Orchestrator uses. A larger, smarter orchestrator model with a faster, cheaper executor gives high quality for fewer tokens.": "选择编排器使用的模型。使用更强大、更智能的编排模型搭配更快速、低成本的执行模型，可在消耗更少 Token 的同时获得更高质量的结果。",
+    "Model selection": "模型选择",
+    "Default uses server-managed routing and Orchestrator quota. Custom pins specific models for orchestration and execution.": "“默认”模式使用服务端托管路由及编排器配额；“自定义”模式可为编排与执行阶段分别指定固定模型。",
+    "Orchestrator model selection": "编排器模型选择",
+    "Orchestrator Model": "编排模型",
+    "Plans the work, makes design decisions, and reviews the result. Pick a top-tier model. You can also pick one per conversation from the Orchestrator row in the model menu.": "负责规划任务、制定设计决策并审查最终结果。建议选择顶级旗舰模型。您也可以在模型菜单的 Orchestrator 行中为每个对话单独指定模型。",
+    "Executor Model": "执行模型",
+    "Carries out the plan: searches, edits, builds, and tests. Pick a faster, cheaper model.": "负责执行具体计划：代码搜索、编辑、构建与测试。建议选择响应更快、成本更低的模型。"
   },
   "patterns": [
     {

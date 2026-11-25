@@ -367,6 +367,16 @@ const testCases = [
   { input: 'Enter always submits. This adds a second shortcut.', expected: '回车键始终用于提交。此设置可添加第二个快捷键。' },
   { input: 'Terminal: Add to Chat', expected: '终端：添加至对话' },
   { input: 'Terminal: Select All', expected: '终端：全选' },
+
+  // 15. v2.35.1 编排器设置 (Orchestrator Settings)
+  { input: 'Orchestrator Settings', expected: '编排器设置' },
+  { input: 'Choose the models Orchestrator uses. A larger, smarter orchestrator model with a faster, cheaper executor gives high quality for fewer tokens.', expected: '选择编排器使用的模型。使用更强大、更智能的编排模型搭配更快速、低成本的执行模型，可在消耗更少 Token 的同时获得更高质量的结果。' },
+  { input: 'Model selection', expected: '模型选择' },
+  { input: 'Default uses server-managed routing and Orchestrator quota. Custom pins specific models for orchestration and execution.', expected: '“默认”模式使用服务端托管路由及编排器配额；“自定义”模式可为编排与执行阶段分别指定固定模型。' },
+  { input: 'Orchestrator Model', expected: '编排模型' },
+  { input: 'Plans the work, makes design decisions, and reviews the result. Pick a top-tier model. You can also pick one per conversation from the Orchestrator row in the model menu.', expected: '负责规划任务、制定设计决策并审查最终结果。建议选择顶级旗舰模型。您也可以在模型菜单的 Orchestrator 行中为每个对话单独指定模型。' },
+  { input: 'Executor Model', expected: '执行模型' },
+  { input: 'Carries out the plan: searches, edits, builds, and tests. Pick a faster, cheaper model.', expected: '负责执行具体计划：代码搜索、编辑、构建与测试。建议选择响应更快、成本更低的模型。' },
 ];
 
 let passed = 0;
